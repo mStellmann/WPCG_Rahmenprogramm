@@ -7,6 +7,11 @@ package main.java.edu.cg1.exercises.introduction;
 
 import java.awt.Color;
 import java.awt.font.TransformAttribute;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JFrame;
 import javax.vecmath.Color3f;
@@ -61,14 +66,12 @@ public class CopyOfCGAufgabenblatt1 extends JFrame {
 		// The SimpleUniverse provides convenient default settings
 		universe = new SimpleUniverse(canvas3D);
 		universe.getViewingPlatform().setNominalViewingTransform();
-
 		// Setup lighting
 		addLight(universe);
 
 		// Allow for mouse control
 		OrbitBehavior ob = new OrbitBehavior(canvas3D);
-		ob.setSchedulingBounds(new BoundingSphere(new Point3d(0, 0, 0),
-				Double.MAX_VALUE));
+		ob.setSchedulingBounds(new BoundingSphere(new Point3d(0, 0, 0), Double.MAX_VALUE));
 		universe.getViewingPlatform().setViewPlatformBehavior(ob);
 
 		// Set the background color
@@ -80,7 +83,7 @@ public class CopyOfCGAufgabenblatt1 extends JFrame {
 		// Setup frame
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Einfuehrung in die Computergrafik");
-		setSize(500, 500);
+		setSize(750, 750);
 		getContentPane().add("Center", canvas3D);
 		setVisible(true);
 	}
@@ -90,18 +93,17 @@ public class CopyOfCGAufgabenblatt1 extends JFrame {
 	 * the scene before the scene in compiled (see createSceneGraph()).
 	 */
 	private void addLight(SimpleUniverse universe) {
-		addPointLight(new Point3f(1, 1, 1));
-		addPointLight(new Point3f(-1, -1, -1));
-		addPointLight(new Point3f(1, -1, 1));
-		addDirectionalLight(new Vector3f(0, 0, 1));
+		addPointLight(new Point3f(100, 100, 100));
+		addPointLight(new Point3f(-100, -100, -100));
+		addPointLight(new Point3f(100, -100, 100));
+		addDirectionalLight(new Vector3f(0, 0, 100));
 	}
 
 	void addPointLight(Point3f position) {
 		PointLight light = new PointLight();
 		light.setPosition(position);
 		light.setColor(new Color3f(1, 1, 1));
-		light.setInfluencingBounds(new BoundingSphere(
-				new Point3d(0.0, 0.0, 0.0), 100.0));
+		light.setInfluencingBounds(new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0));
 		scene.addChild(light);
 	}
 
@@ -109,8 +111,7 @@ public class CopyOfCGAufgabenblatt1 extends JFrame {
 		DirectionalLight light = new DirectionalLight();
 		light.setDirection(direction);
 		light.setColor(new Color3f(1, 1, 1));
-		light.setInfluencingBounds(new BoundingSphere(
-				new Point3d(0.0, 0.0, 0.0), 100.0));
+		light.setInfluencingBounds(new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0));
 		scene.addChild(light);
 	}
 
@@ -118,11 +119,15 @@ public class CopyOfCGAufgabenblatt1 extends JFrame {
 	 * Create the default scene graph.
 	 */
 	protected void createSceneGraph() {
-		// Example object
-
-		// Add a coordinate system to the scene.
-		scene.addChild(createBird());
-
+		// Add birds to the scene.
+		scene.addChild(createBird(0.0, 0.75, 6.5f));
+		scene.addChild(createBird(15.0, 0.5, 6.0f));
+		scene.addChild(createBird(15.0, 0.5, 7.0f));
+		scene.addChild(createBird(30.0, 0.25, 5.5f));
+		scene.addChild(createBird(30.0, 0.25, 7.5f));
+		scene.addChild(createBird(45.0, 0.15, 5.0f));
+		scene.addChild(createBird(45.0, 0.15, 8.0f));
+		// Add the landscape
 		scene.addChild(createLandscape());
 
 		// Assemble scene
@@ -132,28 +137,147 @@ public class CopyOfCGAufgabenblatt1 extends JFrame {
 
 	protected Node createLandscape() {
 		Group group = new Group();
-		
-		// TODO flache Box als Bodenplatte
-		
-		group.addChild(createTrees());
-		
-		return null; // TODO
-	}
-	
-	protected Node createTrees() {
-		return null; // TODO
-	}
 
-	protected Node createBird() {
-		Group group = new Group();
+		Box baseplate = new Box(11f, 0.1f, 11f, new Appearance());
+		AppearanceHelper.setColor(baseplate, new Color3f(0.3f, 0.4f, 0f));
 
-		group.addChild(createBody());
-		group.addChild(createHead());
-		group.addChild(createWings());
-		group.addChild(createLegs());
-		group.addChild(createTail());
+		group.addChild(baseplate);
+		Group trees = new Group();
+		// MAXIMALE ANZAHL BÄUME == 185
+		placeTrees(trees, new ArrayList<PointOfTree>(), 20);
+		group.addChild(trees);
 
 		return group;
+	}
+
+	protected Node createTree(float xTrans, float zTrans) {
+		Cylinder trunk = new Cylinder(0.2f, 1f);
+		AppearanceHelper.setColor(trunk, new Color3f(0.6f, 0.4f, 0f));
+		Sphere treetop = new Sphere(0.5f);
+		AppearanceHelper.setColor(treetop, new Color3f(0.2f, 0.7f, 0f));
+
+		Transform3D treeTranslate = new Transform3D();
+		treeTranslate.setTranslation(new Vector3f(0f, 0.5f, 0f));
+
+		Transform3D treePostion = new Transform3D();
+		treePostion.setTranslation(new Vector3f(xTrans, 0f, zTrans));
+
+		TransformGroup treeTopTG = new TransformGroup(treeTranslate);
+		treeTopTG.addChild(treetop);
+		TransformGroup treeTG = new TransformGroup(treeTranslate);
+		treeTG.addChild(trunk);
+		treeTG.addChild(treeTopTG);
+
+		TransformGroup treePositionTG = new TransformGroup(treePostion);
+		treePositionTG.addChild(treeTG);
+
+		return treePositionTG;
+	}
+
+	protected void placeTrees(Group trees, List<PointOfTree> placedTrees, int numberOfTrees) {
+		if (numberOfTrees == 0) {
+			return;
+		} else {
+			float xTrans = new Random().nextFloat() * 20 - 10;
+			float zTrans = new Random().nextFloat() * 20 - 10;
+
+			if (checkPlaceOfTree(xTrans, zTrans, placedTrees)) {
+				trees.addChild(createTree(xTrans, zTrans));
+				placedTrees.add(new PointOfTree(xTrans, zTrans));
+				placeTrees(trees, placedTrees, numberOfTrees - 1);
+			} else {
+				placeTrees(trees, placedTrees, numberOfTrees);
+			}
+		}
+
+	}
+
+	private boolean checkPlaceOfTree(float xTrans, float zTrans, List<PointOfTree> placedTrees) {
+		if (placedTrees.isEmpty()) {
+			return true;
+		} else {
+			for (PointOfTree elem : placedTrees) {
+				float distance = (float) Math.sqrt(((xTrans - elem.getXTrans()) * (xTrans - elem.getXTrans())) + ((zTrans - elem.getZTrans()) * (zTrans - elem.getZTrans())));
+				if (distance <= 1.2)
+					return false;
+			}
+		}
+		return true;
+	}
+
+	protected Node createBird(double angle, double scale, float translate) {
+		Transform3D birdTranslate = new Transform3D();
+		birdTranslate.rotX(-20.0 * Math.PI / 180.0);
+		birdTranslate.setTranslation(new Vector3f(0f, 2.5f, translate));
+		birdTranslate.setScale(scale);
+		TransformGroup birdGroup = new TransformGroup(birdTranslate);
+
+		birdGroup.addChild(createBody());
+		birdGroup.addChild(createHead());
+		birdGroup.addChild(createWings());
+		birdGroup.addChild(createLegs());
+		birdGroup.addChild(createTail());
+
+		Transform3D birdOuterAnimation = new Transform3D();
+
+		
+
+		TransformGroup birdOuterAnimationTG = new TransformGroup(birdOuterAnimation);
+		birdOuterAnimationTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+		birdOuterAnimationTG.addChild(birdGroup);
+
+		outerAnimation(birdOuterAnimationTG, angle);
+
+		return birdOuterAnimationTG;
+	}
+
+	protected void outerAnimation(final TransformGroup animationTG, final double a) {
+		class AnimateTask extends TimerTask {
+			double angle = a;
+			public void run() {
+				Transform3D newRot = new Transform3D();
+				newRot.rotY(angle * Math.PI / 180.0);
+				animationTG.setTransform(newRot);
+				if (angle <= 0.0)
+					angle = 360.0;
+				else
+					angle -= 0.5;
+			}
+		}
+
+		Timer t1 = new Timer();
+		t1.schedule(new AnimateTask(), 0, 15);
+	}
+
+	protected void innerAnimation(final TransformGroup animationLeftWingTG, final TransformGroup animationRightWingTG) {
+		class AnimateTask extends TimerTask {
+			double angle = 0.0;
+			boolean goesDown = true;
+
+			public void run() {
+				Transform3D newRotLeft = new Transform3D();
+				newRotLeft.rotX(angle * Math.PI / 180.0);
+				Transform3D newRotRight = new Transform3D();
+				newRotRight.rotX(-angle * Math.PI / 180.0);
+				animationLeftWingTG.setTransform(newRotLeft);
+				animationRightWingTG.setTransform(newRotRight);
+				if (angle <= -30) {
+					angle = -29.8;
+					goesDown = false;
+				} else if (angle >= 30) {
+					angle = 29.8;
+					goesDown = true;
+				} else {
+					if (goesDown)
+						angle -= 0.2;
+					else
+						angle += 0.2;
+				}
+			}
+		}
+
+		Timer t1 = new Timer();
+		t1.schedule(new AnimateTask(), 0, 2);
 	}
 
 	protected Node createBody() {
@@ -242,50 +366,112 @@ public class CopyOfCGAufgabenblatt1 extends JFrame {
 
 		return outerTG;
 	}
-	
+
 	protected Node createWings() {
 		Group wings = new Group();
-		wings.addChild(createLeftWing());
-		wings.addChild(createRightWing());
+		TransformGroup leftWing = createLeftWing();
+		TransformGroup rightWing = createRightWing();
+		wings.addChild(leftWing);
+		wings.addChild(rightWing);
+		
+		// start of the inner animation
+		innerAnimation(leftWing, rightWing);
+		
 		return wings;
 	}
-	
-	protected Node createLeftWing(){
-		Box wing = new Box(0.2f,0.03f,0.4f, new Appearance());
+
+	protected TransformGroup createLeftWing() {
+		Box wing = new Box(0.2f, 0.03f, 0.4f, new Appearance());
 		AppearanceHelper.setColor(wing, new Color3f(0.45f, 0.0f, 0.58f));
 		Transform3D wingfirstTranslate = new Transform3D();
 		wingfirstTranslate.setTranslation(new Vector3f(0f, 0f, 0.4f));
 		Transform3D wingTranslate = new Transform3D();
-	
+
 		wingTranslate.setTranslation(new Vector3f(0f, 0f, 0.15f));
 		TransformGroup wingFirstTG = new TransformGroup(wingfirstTranslate);
 		TransformGroup wingTG = new TransformGroup(wingTranslate);
+		wingTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		wingFirstTG.addChild(wing);
 		wingTG.addChild(wingFirstTG);
 		return wingTG;
 	}
-	
-	protected Node createRightWing(){
-		Box wing = new Box(0.2f,0.03f,0.4f, new Appearance());
+
+	protected TransformGroup createRightWing() {
+		Box wing = new Box(0.2f, 0.03f, 0.4f, new Appearance());
 		AppearanceHelper.setColor(wing, new Color3f(0.45f, 0.0f, 0.58f));
 		Transform3D wingfirstTranslate = new Transform3D();
 		wingfirstTranslate.setTranslation(new Vector3f(0f, 0f, -0.4f));
 		Transform3D wingTranslate = new Transform3D();
-	
+
 		wingTranslate.setTranslation(new Vector3f(0f, 0f, -0.15f));
 		TransformGroup wingFirstTG = new TransformGroup(wingfirstTranslate);
 		TransformGroup wingTG = new TransformGroup(wingTranslate);
 		wingFirstTG.addChild(wing);
+		wingTG.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 		wingTG.addChild(wingFirstTG);
 		return wingTG;
 	}
-	
+
 	protected Node createLegs() {
-		return null; // TODO
+		Group legs = new Group();
+		legs.addChild(createLeg(0.075f));
+		legs.addChild(createLeg(-0.075f));
+		return legs;
 	}
-	
+
+	protected Node createLeg(float zTrans) {
+		Cylinder leg = new Cylinder(0.03f, 0.15f);
+		AppearanceHelper.setColor(leg, new Color3f(0.8f, 0.4f, 0.0f));
+		Transform3D legTranslate = new Transform3D();
+		legTranslate.setTranslation(new Vector3f(0.12f, -0.18f, zTrans));
+		TransformGroup legTG = new TransformGroup(legTranslate);
+		legTG.addChild(leg);
+		legTG.addChild(createFeet());
+		return legTG;
+	}
+
+	protected Node createFeet() {
+		Box feet = new Box(0.1f, 0.03f, 0.06f, new Appearance());
+		AppearanceHelper.setColor(feet, new Color3f(0.8f, 0.4f, 0.0f));
+		Transform3D feetTranslate = new Transform3D();
+		feetTranslate.setTranslation(new Vector3f(-0.025f, -0.075f, 0f));
+		TransformGroup feetTG = new TransformGroup(feetTranslate);
+		feetTG.addChild(feet);
+		return feetTG;
+	}
+
 	protected Node createTail() {
-		return null; // TODO
+		Box tail = new Box(0.03f, 0.18f, 0.12f, new Appearance());
+		AppearanceHelper.setColor(tail, new Color3f(0.45f, 0.0f, 0.58f));
+		Transform3D tailTranslate = new Transform3D();
+
+		tailTranslate.rotZ(-8.0 * Math.PI / 180.0);
+		tailTranslate.setTranslation(new Vector3f(0.315f, 0.046f, 0.0f));
+		TransformGroup tailTG = new TransformGroup(tailTranslate);
+		tailTG.addChild(tail);
+
+		return tailTG;
+	}
+
+	// helping Class for the placement of Trees
+	private class PointOfTree {
+
+		private final float xTrans;
+		private final float zTrans;
+
+		public PointOfTree(float xTrans, float zTrans) {
+			this.xTrans = xTrans;
+			this.zTrans = zTrans;
+		}
+
+		public float getXTrans() {
+			return xTrans;
+		}
+
+		public float getZTrans() {
+			return zTrans;
+		}
+
 	}
 
 	/**
