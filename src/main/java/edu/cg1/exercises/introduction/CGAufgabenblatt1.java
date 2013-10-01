@@ -123,23 +123,36 @@ public class CGAufgabenblatt1 extends JFrame {
 		// Add a coordinate system to the scene.
 		scene.addChild(createBird());
 
+		scene.addChild(createLandscape());
+
 		// Assemble scene
 		scene.compile();
 		universe.addBranchGraph(scene);
 	}
 
-	/**
-	 * Create a group to represent the coordinate system.
-	 * 
-	 * @return
-	 */
-	protected Node createBird() {
-
+	protected Node createLandscape() {
 		Group group = new Group();
+
+		// TODO flache Box als Bodenplatte
+
+		group.addChild(createTrees());
+
+		return null; // TODO
+	}
+
+	protected Node createTrees() {
+		return null; // TODO
+	}
+
+	protected Node createBird() {
+		Group group = new Group();
+
 		group.addChild(createBody());
 		group.addChild(createHead());
-		group.addChild(createLeftWing());
-		group.addChild(createRightWing());
+		group.addChild(createWings());
+		group.addChild(createLegs());
+		group.addChild(createTail());
+		
 
 		return group;
 	}
@@ -167,35 +180,33 @@ public class CGAufgabenblatt1 extends JFrame {
 
 		return headTG;
 	}
-	
-	protected Node createLeftWing(){
-		Box wing = new Box(0.2f,0.03f,0.4f, new Appearance());
-		AppearanceHelper.setColor(wing, new Color3f(0.45f, 0.0f, 0.58f));
-		Transform3D wingfirstTranslate = new Transform3D();
-		wingfirstTranslate.setTranslation(new Vector3f(0f, 0f, 0.4f));
-		Transform3D wingTranslate = new Transform3D();
-	
-		wingTranslate.setTranslation(new Vector3f(0f, 0f, 0.15f));
-		TransformGroup wingFirstTG = new TransformGroup(wingfirstTranslate);
-		TransformGroup wingTG = new TransformGroup(wingTranslate);
-		wingFirstTG.addChild(wing);
-		wingTG.addChild(wingFirstTG);
-		return wingTG;
+
+	protected Node createLegs() {
+		Group legs = new Group();
+		legs.addChild(createLeg(0.075f));
+		legs.addChild(createLeg(-0.075f));
+		return legs;
 	}
-	
-	protected Node createRightWing(){
-		Box wing = new Box(0.2f,0.03f,0.4f, new Appearance());
-		AppearanceHelper.setColor(wing, new Color3f(0.45f, 0.0f, 0.58f));
-		Transform3D wingfirstTranslate = new Transform3D();
-		wingfirstTranslate.setTranslation(new Vector3f(0f, 0f, -0.4f));
-		Transform3D wingTranslate = new Transform3D();
-	
-		wingTranslate.setTranslation(new Vector3f(0f, 0f, -0.15f));
-		TransformGroup wingFirstTG = new TransformGroup(wingfirstTranslate);
-		TransformGroup wingTG = new TransformGroup(wingTranslate);
-		wingFirstTG.addChild(wing);
-		wingTG.addChild(wingFirstTG);
-		return wingTG;
+
+	protected Node createLeg(float zTrans) {
+		Cylinder leg = new Cylinder(0.03f, 0.15f);
+		AppearanceHelper.setColor(leg, new Color3f(0.8f, 0.4f, 0.0f));
+		Transform3D legTranslate = new Transform3D();
+		legTranslate.setTranslation(new Vector3f(0.12f, -0.18f, zTrans));
+		TransformGroup legTG = new TransformGroup(legTranslate);
+		legTG.addChild(leg);
+		legTG.addChild(createFeet());
+		return legTG;
+	}
+
+	protected Node createFeet() {
+		Box feet = new Box(0.1f, 0.03f,0.06f , new Appearance());
+		AppearanceHelper.setColor(feet, new Color3f(0.8f, 0.4f, 0.0f));
+		Transform3D feetTranslate = new Transform3D();
+		feetTranslate.setTranslation(new Vector3f(-0.025f, -0.075f, 0f));
+		TransformGroup feetTG = new TransformGroup(feetTranslate);
+		feetTG.addChild(feet);
+		return feetTG;
 	}
 
 	protected Node createBeak() {
@@ -259,6 +270,65 @@ public class CGAufgabenblatt1 extends JFrame {
 		outerTG.addChild(eyeRightTG);
 
 		return outerTG;
+	}
+
+	protected Node createWings() {
+		Group wings = new Group();
+		wings.addChild(createLeftWing());
+		wings.addChild(createRightWing());
+		return wings;
+	}
+
+	protected Node createLeftWing() {
+		Box wing = new Box(0.2f, 0.03f, 0.4f, new Appearance());
+		AppearanceHelper.setColor(wing, new Color3f(0.45f, 0.0f, 0.58f));
+		Transform3D wingfirstTranslate = new Transform3D();
+		wingfirstTranslate.setTranslation(new Vector3f(0f, 0f, 0.4f));
+		Transform3D wingTranslate = new Transform3D();
+
+		wingTranslate.setTranslation(new Vector3f(0f, 0f, 0.15f));
+		TransformGroup wingFirstTG = new TransformGroup(wingfirstTranslate);
+		TransformGroup wingTG = new TransformGroup(wingTranslate);
+		wingFirstTG.addChild(wing);
+		wingTG.addChild(wingFirstTG);
+		return wingTG;
+	}
+
+	protected Node createRightWing() {
+		Box wing = new Box(0.2f, 0.03f, 0.4f, new Appearance());
+		AppearanceHelper.setColor(wing, new Color3f(0.45f, 0.0f, 0.58f));
+		Transform3D wingfirstTranslate = new Transform3D();
+		wingfirstTranslate.setTranslation(new Vector3f(0f, 0f, -0.4f));
+		Transform3D wingTranslate = new Transform3D();
+
+		wingTranslate.setTranslation(new Vector3f(0f, 0f, -0.15f));
+		TransformGroup wingFirstTG = new TransformGroup(wingfirstTranslate);
+		TransformGroup wingTG = new TransformGroup(wingTranslate);
+		wingFirstTG.addChild(wing);
+		wingTG.addChild(wingFirstTG);
+		return wingTG;
+	}
+
+	protected Node createTail() {
+		Box tail = new Box(0.03f, 0.18f, 0.12f, new Appearance());
+		AppearanceHelper.setColor(tail, new Color3f(0.45f, 0.0f, 0.58f));
+		Transform3D tailTranslate = new Transform3D();
+		
+		tailTranslate.rotZ(-8.0 * Math.PI / 180.0);
+		tailTranslate.setTranslation(new Vector3f(0.315f, 0.046f, 0.0f));
+		TransformGroup tailTG = new TransformGroup(tailTranslate);
+		
+//		Shape3D shape = tail.getShape(4);
+//		Geometry geometry = shape.getGeometry();
+//		
+//		Appearance appearance = tail.getAppearance();
+//		LineAttributes lA = appearance.getLineAttributes();
+//		lA.setLineWidth(0.3f);
+//		
+		
+		tailTG.addChild(tail);
+		
+		return tailTG; // TODO
 	}
 
 	/**
